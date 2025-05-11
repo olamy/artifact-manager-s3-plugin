@@ -61,8 +61,7 @@ public class MinioIntegrationTest extends AbstractIntegrationTest {
         }
         minioServer = new MinIOContainer("minio/minio")
                 .withUserName(ACCESS_KEY)
-                .withPassword(SECRET_KEY)
-                .withLogConsumer(outputFrame -> System.out.println(outputFrame.getUtf8String()));
+                .withPassword(SECRET_KEY);
         minioServer.start();
 
         Integer mappedPort = minioServer.getFirstMappedPort();
@@ -97,6 +96,7 @@ public class MinioIntegrationTest extends AbstractIntegrationTest {
         config.setContainer(CONTAINER_NAME);
         config.setPrefix(CONTAINER_PREFIX);
         config.setCustomEndpoint(minioServiceEndpoint);
+        config.setCustomSigningRegion(REGION);
         config.setUseHttp(true);
         config.setUsePathStyleUrl(true);
         config.setDisableSessionToken(true);
