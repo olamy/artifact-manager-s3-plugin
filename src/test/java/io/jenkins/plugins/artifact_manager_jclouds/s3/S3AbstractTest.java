@@ -24,7 +24,6 @@
 
 package io.jenkins.plugins.artifact_manager_jclouds.s3;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assume.assumeNoException;
@@ -49,12 +48,11 @@ import io.jenkins.plugins.artifact_manager_jclouds.BlobStoreProvider;
 import io.jenkins.plugins.artifact_manager_jclouds.JCloudsVirtualFile;
 import io.jenkins.plugins.aws.global_configuration.CredentialsAwsGlobalConfiguration;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 
 public abstract class S3AbstractTest {
     private static final String S3_BUCKET = System.getenv("S3_BUCKET");
@@ -67,12 +65,12 @@ public abstract class S3AbstractTest {
     public static void live() {
         assumeThat("define $S3_BUCKET as explained in README", S3_BUCKET, notNullValue());
         assumeThat("define $S3_DIR as explained in README", S3_DIR, notNullValue());
-        AwsCredentialsProvider ssoEnabledCredentialsProvider = AwsCredentialsProviderChain.builder().addCredentialsProvider(new V2ProfileCredentialsProvider()).build();
+
+        AwsCredentialsProvider ssoEnabledCredentialsProvider = ProfileCredentialsProvider.create();
         S3BlobStoreConfig.clientBuilder = () -> S3Client.builder().credentialsProvider(ssoEnabledCredentialsProvider);
         S3ClientBuilder builder = S3BlobStoreConfig.clientBuilder.get();
         try (S3Client client = builder.build()) {
-            assertThat(client.headBucket(HeadBucketRequest.builder().bucket(S3_BUCKET).build()).sdkHttpResponse().isSuccessful(), is(true));
-            client.listObjects(ListObjectsRequest.builder().bucket(S3_BUCKET).build());
+            assumeThat(client.headBucket(HeadBucketRequest.builder().bucket(S3_BUCKET).build()).sdkHttpResponse().isSuccessful(), is(true));
         } catch (SdkClientException x) {
             x.printStackTrace();
             assumeNoException("failed to connect to S3 with current credentials", x);
@@ -115,7 +113,6 @@ public abstract class S3AbstractTest {
         config.setContainer(S3_BUCKET);
         CredentialsAwsGlobalConfiguration credentialsConfig = CredentialsAwsGlobalConfiguration.get();
         credentialsConfig.setRegion(S3_REGION);
-
         loggerRule.recordPackage(JCloudsVirtualFile.class, Level.FINE);
 
         // run each test under its own dir

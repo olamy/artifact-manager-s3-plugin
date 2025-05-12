@@ -61,7 +61,10 @@ import io.jenkins.plugins.artifact_manager_jclouds.BlobStoreProvider;
 import io.jenkins.plugins.artifact_manager_jclouds.BlobStoreProviderDescriptor;
 import io.jenkins.plugins.aws.global_configuration.CredentialsAwsGlobalConfiguration;
 import org.jenkinsci.Symbol;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
@@ -162,7 +165,7 @@ public class S3BlobStore extends BlobStoreProvider {
         String accessKeyId;
         String secretKey;
         String sessionToken;
-        
+
         if (getConfiguration().getDisableSessionToken()) {
             AmazonWebServicesCredentials awsCredentials = CredentialsAwsGlobalConfiguration.get().getCredentials();
             if (awsCredentials == null) {
@@ -173,16 +176,24 @@ public class S3BlobStore extends BlobStoreProvider {
             sessionToken = "";
         } else {
             AmazonWebServicesCredentials credentials = CredentialsAwsGlobalConfiguration.get().getCredentials();
+            AwsSessionCredentials awsSessionCredentials;
             if (credentials == null) {
-                throw new IOException("No static AWS credentials found");
+                AwsCredentials awsCredentials = ProfileCredentialsProvider.create().resolveCredentials();
+                if (awsCredentials instanceof AwsSessionCredentials) {
+                    awsSessionCredentials = (AwsSessionCredentials) awsCredentials;
+                } else {
+                    throw new IOException("No AWS credentials found with session token, please check your AWS configuration");
+                }
+            } else {
+                awsSessionCredentials = CredentialsAwsGlobalConfiguration.get().sessionCredentials(getRegion(),
+                        credentials.getId());
             }
-            AwsSessionCredentials awsSessionCredentials = CredentialsAwsGlobalConfiguration.get().sessionCredentials(getRegion(),
-                    credentials.getId());
+
             accessKeyId = awsSessionCredentials.accessKeyId();
             secretKey = awsSessionCredentials.secretAccessKey();
             sessionToken = awsSessionCredentials.sessionToken();
         }
-        
+
         if (BREAK_CREDS) {
             sessionToken = "<broken>";
         }

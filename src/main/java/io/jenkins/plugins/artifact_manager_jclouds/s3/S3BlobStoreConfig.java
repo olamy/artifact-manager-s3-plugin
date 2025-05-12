@@ -54,6 +54,7 @@ import io.jenkins.plugins.aws.global_configuration.CredentialsAwsGlobalConfigura
 import jenkins.model.Jenkins;
 import jenkins.security.FIPS140;
 import org.jenkinsci.Symbol;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -324,12 +325,13 @@ public final class S3BlobStoreConfig extends AbstractAwsGlobalConfiguration {
                 StaticCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(amazonWebServicesCredentials.resolveCredentials());
                 builder = builder.credentialsProvider(credentialsProvider);
             } else {
-                throw new IllegalArgumentException("Cannot create S3Client as no credentials provided");
+                // revert to AWS default mainly use only for testing
+                builder.credentialsProvider(StaticCredentialsProvider.create(DefaultCredentialsProvider.create().resolveCredentials()));
             }
         }
         return builder;
     }
-    
+
     public FormValidation doCheckContainer(@QueryParameter String container){
         FormValidation ret = FormValidation.ok();
         if (StringUtils.isBlank(container)){

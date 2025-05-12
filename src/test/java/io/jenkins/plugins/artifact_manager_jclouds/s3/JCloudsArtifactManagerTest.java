@@ -75,7 +75,6 @@ import hudson.slaves.DumbSlave;
 import hudson.tasks.ArtifactArchiver;
 import io.jenkins.plugins.aws.global_configuration.CredentialsAwsGlobalConfiguration;
 import java.io.Serializable;
-import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Set;
@@ -92,8 +91,6 @@ import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jvnet.hudson.test.Issue;
-import org.jclouds.blobstore.BlobStoreContext;
-import org.jclouds.blobstore.domain.Blob;
 import org.jenkinsci.plugins.workflow.flow.FlowCopier;
 import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
 import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectTest;
@@ -108,7 +105,6 @@ import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.S3ClientBuilder;
 
 public class JCloudsArtifactManagerTest extends S3AbstractTest {
 
@@ -185,7 +181,7 @@ public class JCloudsArtifactManagerTest extends S3AbstractTest {
     private static final class LoadS3Credentials extends MasterToSlaveCallable<Void, RuntimeException> {
         @Override
         public Void call() {
-            S3Client.builder();
+            S3Client.builder().build();
             return null;
         }
     }

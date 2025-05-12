@@ -21,6 +21,8 @@
     <useBeta>true</useBeta>
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Low</spotbugs.threshold>
+    <aws.sdk>2.31.26</aws.sdk>
+    <aws.plugin.version>${aws.sdk}-37.vd178d9b_0558f</aws.plugin.version>
   </properties>
 
   <name>Artifact Manager on S3 plugin</name>
@@ -45,15 +47,16 @@
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>aws-global-configuration</artifactId>
     </dependency>
+    <!-- TODO remove when in bom -->
     <dependency>
       <groupId>io.jenkins.plugins.aws-java-sdk2</groupId>
       <artifactId>aws-java-sdk2-core</artifactId>
-      <version>2.31.26-37.vd178d9b_0558f</version>
+      <version>${aws.plugin.version}</version>
     </dependency>
     <dependency>
       <groupId>io.jenkins.plugins.aws-java-sdk2</groupId>
       <artifactId>aws-java-sdk2-s3</artifactId>
-      <version>2.31.26-37.vd178d9b_0558f</version>
+      <version>${aws.plugin.version}</version>
     </dependency>
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
@@ -112,7 +115,13 @@
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
       <artifactId>sso</artifactId>
-      <version>2.29.23</version>
+      <version>${aws.sdk}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>ssooidc</artifactId>
+      <version>${aws.sdk}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
